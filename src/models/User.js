@@ -24,6 +24,20 @@ const userSchema = new mongoose.Schema({
         minlength: [6, 'Password must be at least 6 characters'],
         select: false // Don't return password by default
     },
+    loginHistory: [
+        {
+            ip: String,
+            browser: String,
+            os: String,
+            device: String,
+            location: String,
+            timezone: String,
+            date: {
+                type: String,
+                default: () => new Date().toISOString()
+            }
+        }
+    ],
     createdAt: {
         type: Date,
         default: Date.now
@@ -31,9 +45,9 @@ const userSchema = new mongoose.Schema({
 });
 
 // Encrypt password using bcrypt
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function () {
     if (!this.isModified('password')) {
-        next();
+        return;
     }
 
     const salt = await bcrypt.genSalt(12); // Strong salt rounds

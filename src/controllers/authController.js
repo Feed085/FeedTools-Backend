@@ -53,6 +53,40 @@ exports.login = async (req, res, next) => {
             return res.status(401).json({ success: false, error: 'Invalid credentials' });
         }
 
+        // Record Login History
+        const useragent = require('useragent');
+        const geoip = require('geoip-lite');
+
+        const agent = useragent.parse(req.headers['user-agent']);
+        const ip = req.ip === '::1' || req.ip === '127.0.0.1' ? '82.194.16.0' : (req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress); // Fallback to a Baku IP for local testing
+        const geo = geoip.lookup(ip);
+
+        const loginData = {
+            ip: ip,
+            browser: agent.toAgent(),
+            os: agent.os.toString(),
+            device: agent.device.toString(),
+            location: geo ? `${geo.city}, ${geo.country}` : 'Unknown',
+            timezone: geo ? geo.timezone : 'UTC',
+            date: new Date().toLocaleString('tr-TR', {
+                timeZone: geo ? geo.timezone : 'UTC',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            })
+        };
+
+        // Add to history (keep only last 10 for performance/size)
+        user.loginHistory.unshift(loginData);
+        if (user.loginHistory.length > 10) {
+            user.loginHistory.pop();
+        }
+
+        await user.save();
+
         const token = generateToken(user._id);
 
         res.status(200).json({
