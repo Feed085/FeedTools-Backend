@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, getMe, updateUserDetails, verifyOTP, resendOTP } = require('../controllers/authController');
+const { register, login, getMe, updateUserDetails, verifyOTP, resendOTP, decrementGameLimit, getRecentlyPlayed } = require('../controllers/authController');
 const { validateRegister, validateLogin } = require('../middleware/validator');
 const { protect } = require('../middleware/auth');
 
@@ -11,5 +11,7 @@ router.post('/verify', verifyOTP);
 router.post('/resend-code', resendOTP);
 router.get('/me', protect, getMe);
 router.put('/updatedetails', protect, updateUserDetails);
+router.post('/decrement-limit', protect, decrementGameLimit);
+router.get('/recent-games', protect, getRecentlyPlayed);
 
 module.exports = router;

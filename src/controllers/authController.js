@@ -216,7 +216,34 @@ exports.getMe = async (req, res, next) => {
     }
 };
 
-const { resolveSteamID, getSteamData } = require('../utils/steam');
+const { resolveSteamID, getSteamData, getRecentlyPlayedGames } = require('../utils/steam');
+
+// @desc    Get recently played games from Steam
+// @route   GET /api/v1/auth/recent-games
+// @access  Private
+exports.getRecentlyPlayed = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user || !user.steamUrl) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        const steamID = await resolveSteamID(user.steamUrl);
+        if (!steamID) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        const games = await getRecentlyPlayedGames(steamID);
+
+        res.status(200).json({
+            success: true,
+            data: games
+        });
+    } catch (err) {
+        next(err);
+    }
+};
 
 // @desc    Update user details
 // @route   PUT /api/v1/auth/updatedetails
@@ -304,6 +331,46 @@ exports.resendOTP = async (req, res, next) => {
         } catch (err) {
             return res.status(500).json({ success: false, error: 'E-posta gönderilemedi.' });
         }
+    } catch (err) {
+        next(err);
+    }
+};
+// @desc    Decrement user game limit
+// @route   POST /api/v1/auth/decrement-limit
+// @access  Private
+exports.decrementGameLimit = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        // 1. Check if user has an active subscription
+        const isSubscribed = user.subscriptionExpiry && new Date(user.subscriptionExpiry) > new Date();
+
+        // If user has an active subscription, limit is effectively infinite
+        if (isSubscribed) {
+            return res.status(200).json({ success: true, data: user });
+        }
+
+        // 2. Check for manual infinite limit (-1)
+        if (user.gameLimit === -1) {
+            return res.status(200).json({ success: true, data: user });
+        }
+
+        // 3. Normal decrement logic for non-subscribed users
+        if (user.gameLimit <= 0) {
+            return res.status(400).json({ success: false, error: 'Oyun hakkınız bitmiştir. Lütfen paket satın alın.' });
+        }
+
+        user.gameLimit -= 1;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            data: user
+        });
     } catch (err) {
         next(err);
     }

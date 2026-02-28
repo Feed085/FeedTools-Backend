@@ -71,6 +71,14 @@ const userSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    subscriptionExpiry: {
+        type: Date,
+        default: null
+    },
+    gameLimit: {
+        type: Number,
+        default: 0
     }
 });
 

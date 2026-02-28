@@ -120,7 +120,31 @@ const getSteamData = async (steamID) => {
     }
 };
 
+/**
+ * Fetches recently played games for a SteamID.
+ * @param {string} steamID - The 17-digit SteamID.
+ * @returns {Promise<Array>} - List of recently played games.
+ */
+const getRecentlyPlayedGames = async (steamID) => {
+    try {
+        const res = await axios.get(`http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/`, {
+            params: {
+                key: process.env.STEAM_API_KEY,
+                steamid: steamID,
+                count: 4,
+                format: 'json'
+            }
+        });
+
+        return res.data.response.games || [];
+    } catch (error) {
+        console.error('Error fetching recently played games:', error.message);
+        return [];
+    }
+};
+
 module.exports = {
     resolveSteamID,
-    getSteamData
+    getSteamData,
+    getRecentlyPlayedGames
 };
