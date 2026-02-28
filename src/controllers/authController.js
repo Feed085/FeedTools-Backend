@@ -113,3 +113,27 @@ exports.getMe = async (req, res, next) => {
         next(err);
     }
 };
+
+// @desc    Update user details
+// @route   PUT /api/v1/auth/updatedetails
+// @access  Private
+exports.updateUserDetails = async (req, res, next) => {
+    try {
+        const fieldsToUpdate = {};
+        if (req.body.username) fieldsToUpdate.username = req.body.username;
+        if (req.body.avatar) fieldsToUpdate.avatar = req.body.avatar;
+        if (req.body.banner) fieldsToUpdate.banner = req.body.banner;
+
+        const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+            returnDocument: 'after',
+            runValidators: true
+        });
+
+        res.status(200).json({
+            success: true,
+            data: user
+        });
+    } catch (err) {
+        next(err);
+    }
+};

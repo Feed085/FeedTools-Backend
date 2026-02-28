@@ -38,6 +38,14 @@ const userSchema = new mongoose.Schema({
             }
         }
     ],
+    avatar: {
+        type: String,
+        default: null
+    },
+    banner: {
+        type: String,
+        default: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1400&q=80'
+    },
     createdAt: {
         type: Date,
         default: Date.now
