@@ -46,6 +46,17 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1400&q=80'
     },
+    steamUrl: {
+        type: String,
+        default: null
+    },
+    steamData: {
+        totalGames: { type: Number, default: 0 },
+        totalPlaytime: { type: Number, default: 0 },
+        totalAchievements: { type: Number, default: 0 },
+        isPrivate: { type: Boolean, default: false },
+        lastSync: Date
+    },
     createdAt: {
         type: Date,
         default: Date.now

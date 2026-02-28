@@ -114,6 +114,8 @@ exports.getMe = async (req, res, next) => {
     }
 };
 
+const { resolveSteamID, getSteamData } = require('../utils/steam');
+
 // @desc    Update user details
 // @route   PUT /api/v1/auth/updatedetails
 // @access  Private
@@ -124,8 +126,27 @@ exports.updateUserDetails = async (req, res, next) => {
         if (req.body.avatar) fieldsToUpdate.avatar = req.body.avatar;
         if (req.body.banner) fieldsToUpdate.banner = req.body.banner;
 
+        // If steamUrl is provided, fetch steam data
+        if (req.body.steamUrl !== undefined) {
+            fieldsToUpdate.steamUrl = req.body.steamUrl;
+
+            if (req.body.steamUrl) {
+                const steamID = await resolveSteamID(req.body.steamUrl);
+                if (steamID) {
+                    const steamData = await getSteamData(steamID);
+                    fieldsToUpdate.steamData = {
+                        ...steamData,
+                        lastSync: new Date()
+                    };
+                }
+            } else {
+                // Clear steam data if url is emptied
+                fieldsToUpdate.steamData = { totalGames: 0, totalPlaytime: 0, isPrivate: false, lastSync: new Date() };
+            }
+        }
+
         const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
-            returnDocument: 'after',
+            new: true,
             runValidators: true
         });
 
