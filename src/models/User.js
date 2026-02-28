@@ -79,7 +79,8 @@ const userSchema = new mongoose.Schema({
     gameLimit: {
         type: Number,
         default: 0
-    }
+    },
+    library: [String] // Array of Steam App IDs
 });
 
 // Encrypt password using bcrypt

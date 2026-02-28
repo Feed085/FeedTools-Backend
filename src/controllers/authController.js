@@ -375,3 +375,43 @@ exports.decrementGameLimit = async (req, res, next) => {
         next(err);
     }
 };
+
+// @desc    Add game to user library (Subscribed users only)
+// @route   POST /api/v1/auth/library/add
+// @access  Private
+// @desc    Add game appid to user library (Subscribed users only)
+// @route   POST /api/v1/auth/library/add
+// @access  Private
+exports.addGameToLibrary = async (req, res, next) => {
+    try {
+        const { id } = req.body;
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        // Only save if subscribed
+        const isSubscribed = user.subscriptionExpiry && new Date(user.subscriptionExpiry) > new Date();
+        if (!isSubscribed) {
+            return res.status(400).json({ success: false, error: 'Sadece aboneyken kütüphaneyi buluta kaydedebilirsiniz.' });
+        }
+
+        const appid = id.toString();
+
+        // Prevent duplicates (library is now a flat array of strings)
+        if (user.library && user.library.includes(appid)) {
+            return res.status(200).json({ success: true, data: user });
+        }
+
+        user.library.push(appid);
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            data: user
+        });
+    } catch (err) {
+        next(err);
+    }
+};
