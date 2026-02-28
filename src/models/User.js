@@ -57,6 +57,17 @@ const userSchema = new mongoose.Schema({
         isPrivate: { type: Boolean, default: false },
         lastSync: { type: Date, default: null }
     },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationCode: String,
+    verificationCodeExpire: Date,
+    lastVerificationSent: Date,
+    unverifiedExpire: {
+        type: Date,
+        index: { expires: 0 } // TTL index: Document deleted when this date is reached
+    },
     createdAt: {
         type: Date,
         default: Date.now
