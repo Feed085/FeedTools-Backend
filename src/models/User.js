@@ -55,7 +55,7 @@ const userSchema = new mongoose.Schema({
         totalPlaytime: { type: Number, default: 0 },
         totalAchievements: { type: Number, default: 0 },
         isPrivate: { type: Boolean, default: false },
-        lastSync: Date
+        lastSync: { type: Date, default: null }
     },
     createdAt: {
         type: Date,
